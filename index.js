@@ -77,14 +77,22 @@ function getNewToken(oAuth2Client, callback) {
  */
 function generateData(auth) {
   var sheetsList = [
-                      { name: 'Trackers__cs',
-                        range: 'Trackers!A1:N12894' 
+                      { name: 'Site__cs',
+                        range: 'Site!A1:N12894'
                       },
+                      { name: 'Candidate__cs',
+                        range: 'Candidate!A1:N4'
+                      },
+                      { name: 'Segment__cs',
+                        range: 'Segment!A1:H84'
+                      },
+                      { name: 'Lease__cs',
+                      range: 'Lease!A1:Q3318'
+                    },
                     ];
   const sheets = google.sheets({version: 'v4', auth});
   sheetsList.map((sheetItem) => {
     sheets.spreadsheets.values.get({
-        // spreadsheetId: '1RgE5yKPyFCsgfElQin3lDPD8BQdnAEgbYqD9bC3uDRU', // Trail
         spreadsheetId: '1WJ7G9JmsjnaguKUyVbfcb9O3dflp987EOS995Z3CHDs', //Actual
         range: sheetItem.range,
       }, (err, res) => {
@@ -92,8 +100,17 @@ function generateData(auth) {
         const rows = res.data.values;
         if (rows.length) {
           switch(sheetItem.range) {
-            case sheetsList[0].range: //TrackerCS
-              generate_TrackerCS_file(sheetItem.name, rows);
+            case sheetsList[0].range: //SiteCS
+              generate_SiteCS_file(sheetItem.name, rows);
+              break;
+            case sheetsList[1].range: //CandidateCS
+              generate_CandidateCS_file(sheetItem.name, rows);
+              break;
+            case sheetsList[2].range: //SegmentCS
+              generate_SegmentCS_file(sheetItem.name, rows);
+              break;
+            case sheetsList[3].range: //LeaseCS
+              generate_LeaseCS_file(sheetItem.name, rows);
               break;
             default:
               console.log('No data found.');
@@ -102,10 +119,10 @@ function generateData(auth) {
           console.log('No data found.');
         }
       });
-  })  
+  })
 }
 
-function generate_TrackerCS_file(filename, data) {
+function generate_SiteCS_file(filename, data) {
     var items_cs_data = { records : []};
     var tempObject = { attributes: {}};
     var data, newFileName;
@@ -131,6 +148,7 @@ function generate_TrackerCS_file(filename, data) {
               items_cs_data.records.push(tempObject);
               tempObject = { attributes: {}}
           }
+          // Generate a new file for every 200 records
           if(index != 0 && (index % 200 == 0)) {
             data = JSON.stringify(items_cs_data);
             var fileCount = (index / 200) > 1 ?  (index / 200) : '';
@@ -143,7 +161,117 @@ function generate_TrackerCS_file(filename, data) {
       });
     } catch {
       console.error(newFileName, 'failure');
-    }   
+    }
+}
+
+function generate_CandidateCS_file(filename, data) {
+  var items_cs_data = { records : []};
+  var tempObject = { attributes: {}};
+  var data, newFileName;
+  try {
+    data.map((item, index) => {
+      if(index != 0) {
+          tempObject.attributes['type'] = 'strk__Candidate__c';
+          tempObject.attributes['referenceId'] = `Candidate__cRef${index}`;
+          tempObject['strk__Candidate_Name__c'] = item[0];
+          tempObject['strk__Site__c'] = item[1];
+          tempObject['strk__Street_Address__c'] = item[2];
+          tempObject['strk__Street_Address_2__c'] = item[3];
+          tempObject['strk__Site_Description__c'] = item[4];
+          tempObject['strk__City__c'] = item[5];
+          tempObject['strk__State__c'] = item[6];
+          tempObject['strk__County__c'] = item[7];
+          tempObject['strk__Zip_Code__c'] = item[8];
+          tempObject['strk__Status__c'] = item[9];
+          tempObject['strk__Lat__c'] = item[10];
+          tempObject['strk__Long__c'] = item[11];
+          tempObject['strk__Lease__c'] = item[12];
+          items_cs_data.records.push(tempObject);
+          tempObject = { attributes: {}}
+      }
+    });
+    var data = JSON.stringify(items_cs_data);
+      fs.writeFileSync(fileLocation + filename + '.json', data);
+      console.log(filename, ' is generated!');
+  } catch {
+    console.error(newFileName, 'failure');
+  }
+}
+
+function generate_SegmentCS_file(filename, data) {
+  var items_cs_data = { records : []};
+  var tempObject = { attributes: {}};
+  var data, newFileName;
+  try {
+    data.map((item, index) => {
+        if(index != 0) {
+            tempObject.attributes['type'] = 'strk__Segment__c';
+            tempObject.attributes['referenceId'] = `Segment__cRef${index}`;
+            tempObject['strk_Segment_ID__c'] = item[0];
+            tempObject['strk__Segment_Type__c'] = item[1];
+            tempObject['strk__Segment_Status__c'] = item[2];
+            tempObject['strk__Segment_Description__c'] = item[3];
+            tempObject['strk__Segment_Description__c'] = item[4];
+            tempObject['strk__A-Location__c'] = item[5];
+            tempObject['strk__Z-Location__c'] = item[6];
+            tempObject['strk__Segment_Path__c'] = item[7];
+            tempObject['strk__Snap_To_Street__c'] = item[8];
+            items_cs_data.records.push(tempObject);
+            tempObject = { attributes: {}}
+        }
+    });
+    var data = JSON.stringify(items_cs_data);
+    fs.writeFileSync(fileLocation + filename + '.json', data);
+    console.log(filename, ' is generated!');
+  } catch {
+    console.error(newFileName, 'failure');
+  }
+}
+
+function generate_LeaseCS_file(filename, data) {
+  var items_cs_data = { records : []};
+  var tempObject = { attributes: {}};
+  var data, newFileName;
+  try {
+    data.map((item, index) => {
+      if(index <= 800) {
+        if(index != 0) {
+            tempObject.attributes['type'] = 'strk__Lease__c';
+            tempObject.attributes['referenceId'] = `Lease__cRef${index}`;
+            tempObject['strk__Lease_Name__c'] = item[0];
+            tempObject['strk__Lease_Number__c'] = item[1];
+            tempObject['strk__Status__c'] = item[2];
+            tempObject['strk__Version__c'] = item[3];
+            tempObject['strk__Previous_Version__c'] = item[4];
+            tempObject['strk__Site__c'] = item[5];
+            tempObject['strk__Tenant__c'] = item[6];
+            tempObject['strk__Landlord__c'] = item[7];
+            tempObject['strk__Ownership_Type__c'] = item[8];
+            tempObject['strk__Lease_Description__c'] = item[9];
+            tempObject['strk__Lease_Type__c'] = item[10];
+            tempObject['strk__Lease_Term__c'] = item[11];
+            tempObject['strk__Commencement_Date__c'] = item[12];
+            tempObject['strk__Commencement_Notes__c'] = item[13];
+            tempObject['strk__End_Date__c'] = item[14];
+            tempObject['strk__Days_Until_Lease_End__c'] = item[15];
+            tempObject['strk__Amendment__c'] = item[16];
+            items_cs_data.records.push(tempObject);
+            tempObject = { attributes: {}}
+        }
+        // Generate a new file for every 200 records
+        if(index != 0 && (index % 200 == 0)) {
+          data = JSON.stringify(items_cs_data);
+          var fileCount = (index / 200) > 1 ?  (index / 200) : '';
+          newFileName = `${filename}${fileCount}.json`;
+          fs.writeFileSync(fileLocation + newFileName, data);
+          console.log(newFileName, ' is generated!');
+          items_cs_data.records = [];
+        }
+      }
+    });
+  } catch {
+    console.error(newFileName, 'failure');
+  }
 }
 
 function getArgs () {
