@@ -8,7 +8,7 @@ const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
 // created automatically when the authorization flow completes for the first
 // time.
 const TOKEN_PATH = 'token.json';
-const fileLocation = getArgs().location== 'remote' ? '../../Sitetracker/develop_repo/data/wm/': 'data/';
+const fileLocation = getArgs().location== 'remote' ? '../../Sitetracker/develop_repo/data/wm/': './data/';
 
 // Load client secrets from a local file.
 fs.readFile('credentials.json', (err, content) => {
@@ -87,8 +87,20 @@ function generateData(auth) {
                         range: 'Segment!A1:H84'
                       },
                       { name: 'Lease__cs',
-                      range: 'Lease!A1:Q3318'
-                    },
+                        range: 'Lease!A1:Q3318'
+                      },
+                      { name: 'Lease_Critical_Date__cs',
+                        range: 'Lease_Critical_Date!A1:H341'
+                      },
+                      { name: 'Lease_Payment_Term__cs',
+                        range: 'Lease_Payment_Term!A1:T394'
+                      },
+                      { name: 'Checklist_Template__cs',
+                        range: 'Checklist_Template!A1:C21'
+                      },
+                      { name: 'Checklist_Item_Template__cs',
+                        range: 'Checklist_Item_Template!A1:X357'
+                      },
                     ];
   const sheets = google.sheets({version: 'v4', auth});
   sheetsList.map((sheetItem) => {
@@ -112,6 +124,21 @@ function generateData(auth) {
             case sheetsList[3].range: //LeaseCS
               generate_LeaseCS_file(sheetItem.name, rows);
               break;
+            case sheetsList[4].range: //LeaseCriticalDateCS
+              generate_LeaseCriticalDateCS_file(sheetItem.name, rows);
+              break;
+            case sheetsList[5].range: //LeasePaymentTermCS
+              generate_LeasePaymentTermCS_file(sheetItem.name, rows);
+              break;
+            case sheetsList[6].range: //FormThemeCS
+              generate_FormThemeCS_file(sheetItem.name, rows);
+              break;
+            case sheetsList[7].range: //ChecklistTemplateCS
+              generate_ChecklistTemplateCS_file(sheetItem.name, rows);
+              break;
+            case sheetsList[8].range: //ChecklistItemTemplateCS
+              generate_ChecklistItemTemplateCS_file(sheetItem.name, rows);
+              break;
             default:
               console.log('No data found.');
           }
@@ -128,7 +155,7 @@ function generate_SiteCS_file(filename, data) {
     var data, newFileName;
     try {
       data.map((item, index) => {
-        if(index <= 800) {
+        // if(index <= 800) {
           if(index != 0) {
               tempObject.attributes['type'] = 'strk__Site__c';
               tempObject.attributes['referenceId'] = `Site__cRef${index}`;
@@ -157,7 +184,7 @@ function generate_SiteCS_file(filename, data) {
             console.log(newFileName, ' is generated!');
             items_cs_data.records = [];
           }
-        }
+        // }
       });
     } catch {
       console.error(newFileName, 'failure');
@@ -234,7 +261,7 @@ function generate_LeaseCS_file(filename, data) {
   var data, newFileName;
   try {
     data.map((item, index) => {
-      if(index <= 800) {
+      // if(index <= 800) {
         if(index != 0) {
             tempObject.attributes['type'] = 'strk__Lease__c';
             tempObject.attributes['referenceId'] = `Lease__cRef${index}`;
@@ -267,7 +294,199 @@ function generate_LeaseCS_file(filename, data) {
           console.log(newFileName, ' is generated!');
           items_cs_data.records = [];
         }
+      // }
+    });
+  } catch {
+    console.error(newFileName, 'failure');
+  }
+}
+
+function generate_LeaseCriticalDateCS_file(filename, data) {
+  var items_cs_data = { records : []};
+  var tempObject = { attributes: {}};
+  var data, newFileName;
+  try {
+    data.map((item, index) => {
+      // if(index <= 800) {
+        if(index != 0) {
+            tempObject.attributes['type'] = 'strk__Lease_Critical_Date__c';
+            tempObject.attributes['referenceId'] = `Lease_Critical_Date__cRef${index}`;
+            tempObject['strk__Name__c'] = item[0];
+            tempObject['strk__Lease__c'] = item[1];
+            tempObject['strk__Type__c'] = item[2];
+            tempObject['strk__Description__c'] = item[3];
+            tempObject['strk__Critical_Date__c'] = item[4];
+            tempObject['strk__Notice_Date__c'] = item[5];
+            tempObject['strk__Internal_Process__c'] = item[6];
+            tempObject['strk__Renewal_Length__c'] = item[7];
+            items_cs_data.records.push(tempObject);
+            tempObject = { attributes: {}}
+        }
+        // Generate a new file for every 200 records
+        if(index != 0 && (index % 200 == 0)) {
+          data = JSON.stringify(items_cs_data);
+          var fileCount = (index / 200) > 1 ?  (index / 200) : '';
+          newFileName = `${filename}${fileCount}.json`;
+          fs.writeFileSync(fileLocation + newFileName, data);
+          console.log(newFileName, ' is generated!');
+          items_cs_data.records = [];
+        }
+      // }
+    });
+  } catch {
+    console.error(newFileName, 'failure');
+  }
+}
+
+function generate_LeasePaymentTermCS_file(filename, data) {
+  var items_cs_data = { records : []};
+  var tempObject = { attributes: {}};
+  var data, newFileName;
+  try {
+    data.map((item, index) => {
+      // if(index <= 800) {
+        if(index != 0) {
+            tempObject.attributes['type'] = 'strk__Lease_Payment_Term__c';
+            tempObject.attributes['referenceId'] = `Lease_Payment_Term__cRef${index}`;
+            tempObject['strk__Lease_Payment_Term_Name__c'] = item[0];
+            tempObject['strk__Lease__c'] = item[1];
+            tempObject['strk__Type__c'] = item[2];
+            tempObject['strk__Accounting_Type__c'] = item[3];
+            tempObject['strk__Amount__c'] = item[4];
+            tempObject['strk__Escalator_Type__c'] = item[5];
+            tempObject['strk__Escalation_Amount(%)__c'] = item[6];
+            tempObject['strk__Escalation_Amount($)__c'] = item[7];
+            tempObject['strk__Escalation_Frequency__c'] = item[8];
+            tempObject['strk__Escalation_Interval__c'] = item[9];
+            tempObject['strk__Escalation_Compound_Type__c'] = item[10];
+            tempObject['strk__Date_To_Begin_Escalation__c'] = item[11];
+            tempObject['strk__Custom_Escalation_Period__c'] = item[12];
+            tempObject['strk__End_of_Month__c'] = item[13];
+            tempObject['strk__Number_of_Payments__c'] = item[14];
+            tempObject['strk__Payment_Frequency__c'] = item[15];
+            tempObject['strk__Second_Payment_Date__c'] = item[16];
+            tempObject['strk__Payment_Terms__c'] = item[17];
+            tempObject['strk__Generate_Payments__c'] = item[18];
+            tempObject['strk__First_Payment_Date__c'] = item[19];
+            items_cs_data.records.push(tempObject);
+            tempObject = { attributes: {}}
+        }
+        // Generate a new file for every 200 records
+        if(index != 0 && (index % 200 == 0)) {
+          data = JSON.stringify(items_cs_data);
+          var fileCount = (index / 200) > 1 ?  (index / 200) : '';
+          newFileName = `${filename}${fileCount}.json`;
+          fs.writeFileSync(fileLocation + newFileName, data);
+          console.log(newFileName, ' is generated!');
+          items_cs_data.records = [];
+        }
+      // }
+    });
+  } catch {
+    console.error(newFileName, 'failure');
+  }
+}
+
+function generate_FormThemeCS_file(filename, data) {
+  var items_cs_data = { records : []};
+  var tempObject = { attributes: {}};
+  var data, newFileName;
+  try {
+    data.map((item, index) => {
+      if(index != 0) {
+          tempObject.attributes['type'] = 'strk__Form_Theme__c';
+          tempObject.attributes['referenceId'] = `Form_Theme__cRef${index}`;
+          tempObject['strk__Form_Theme_Name__c'] = item[0];
+          tempObject['strk__Header_Text__c'] = item[1];
+          tempObject['strk__Footer_Text__c'] = item[2];
+          tempObject['strk__Logo_Path__c'] = item[3];
+          tempObject['strk__Align_Logo__c'] = item[4];
+          tempObject['strk__Image_Align__c'] = item[5];
+          tempObject['strk__Group_Images__c'] = item[6];
+          tempObject['strk__Page_Numbering__c'] = item[7];
+          items_cs_data.records.push(tempObject);
+          tempObject = { attributes: {}}
       }
+    });
+    var data = JSON.stringify(items_cs_data);
+      fs.writeFileSync(fileLocation + filename + '.json', data);
+      console.log(filename, ' is generated!');
+  } catch {
+    console.error(newFileName, 'failure');
+  }
+}
+
+function generate_ChecklistTemplateCS_file(filename, data) {
+  var items_cs_data = { records : []};
+  var tempObject = { attributes: {}};
+  var data, newFileName;
+  try {
+    data.map((item, index) => {
+      if(index != 0) {
+          tempObject.attributes['type'] = 'strk__Checklist_Template__c';
+          tempObject.attributes['referenceId'] = `Form_Checklist_Template__cRef${index}`;
+          tempObject['strk__Form_Templates_Name__c'] = item[0];
+          tempObject['strk__Active__c'] = item[1];
+          tempObject['strk__Form_Theme__c'] = item[2];
+          items_cs_data.records.push(tempObject);
+          tempObject = { attributes: {}}
+      }
+    });
+    var data = JSON.stringify(items_cs_data);
+      fs.writeFileSync(fileLocation + filename + '.json', data);
+      console.log(filename, ' is generated!');
+  } catch {
+    console.error(newFileName, 'failure');
+  }
+}
+
+function generate_ChecklistItemTemplateCS_file(filename, data) {
+  var items_cs_data = { records : []};
+  var tempObject = { attributes: {}};
+  var data, newFileName;
+  try {
+    data.map((item, index) => {
+      // if(index <= 800) {
+        if(index != 0) {
+            tempObject.attributes['type'] = 'strk__Checklist_Item_Template__c';
+            tempObject.attributes['referenceId'] = `Checklist_Item_Template__cRef${index}`;
+            tempObject['strk__Form_Item_Template_Name__c'] = item[0];
+            tempObject['strk__Form_Template__c'] = item[0];
+            tempObject['strk__Order__c'] = item[1];
+            tempObject['strk__Section__c'] = item[2];
+            tempObject['strk__Subsection__c'] = item[3];
+            tempObject['strk__Description__c'] = item[4];
+            tempObject['strk__Response_Type__c'] = item[5];
+            tempObject['strk__Render_Logic__c'] = item[6];
+            tempObject['strk__Optional__c'] = item[7];
+            tempObject['strk__Comment_Required__c'] = item[8];
+            tempObject['strk__Photo_Required__c'] = item[9];
+            tempObject['strk__Geofence_Photo_Upload__c'] = item[10];
+            tempObject['strk__Tags_Applied_On_Upload__c'] = item[11];
+            tempObject['strk__Label_Override__c'] = item[12];
+            tempObject['strk__Filter_Criteria__c'] = item[13];
+            tempObject['strk__Picklist_Values__c'] = item[14];
+            tempObject['strk__Field_Reference__c'] = item[15];
+            tempObject['strk__Child_Object__c'] = item[16];
+            tempObject['strk__Child_Relationship_Path__c'] = item[17];
+            tempObject['strk__Form_Relationship_Path__c'] = item[18];
+            tempObject['strk__Display_Field_Set_Name__c'] = item[19];
+            tempObject['strk__Show_Existing_Related_Records__c'] = item[20];
+            tempObject['strk__Read_Only__c'] = item[21];
+            tempObject['strk__Request_Signature_for_Children__c'] = item[22];
+            items_cs_data.records.push(tempObject);
+            tempObject = { attributes: {}}
+        }
+        // Generate a new file for every 200 records
+        if(index != 0 && (index % 200 == 0)) {
+          data = JSON.stringify(items_cs_data);
+          var fileCount = (index / 200) > 1 ?  (index / 200) : '';
+          newFileName = `${filename}${fileCount}.json`;
+          fs.writeFileSync(fileLocation + newFileName, data);
+          console.log(newFileName, ' is generated!');
+          items_cs_data.records = [];
+        }
+      // }
     });
   } catch {
     console.error(newFileName, 'failure');
