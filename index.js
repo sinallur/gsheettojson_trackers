@@ -95,6 +95,9 @@ function generateData(auth) {
                       { name: 'Lease_Payment_Term__cs',
                         range: 'Lease_Payment_Term!A1:T394'
                       },
+                      { name: 'Form_Theme__cs',
+                        range: 'Form_Theme!A1:H17'
+                      },
                       { name: 'Checklist_Template__cs',
                         range: 'Checklist_Template!A1:C21'
                       },
@@ -175,13 +178,8 @@ function generate_SiteCS_file(filename, data) {
               items_cs_data.records.push(tempObject);
               tempObject = { attributes: {}}
           }
-          // Generate a new file for every 200 records
-          if(index != 0 && (index % 200 == 0)) {
-            data = JSON.stringify(items_cs_data);
-            var fileCount = (index / 200) > 1 ?  (index / 200) : '';
-            newFileName = `${filename}${fileCount}.json`;
-            fs.writeFileSync(fileLocation + newFileName, data);
-            console.log(newFileName, ' is generated!');
+          if(index != 0 && (index % 200 == 0 || index == data.length - 1)) {
+            generateFile(items_cs_data, index, filename);
             items_cs_data.records = [];
           }
         // }
@@ -286,12 +284,8 @@ function generate_LeaseCS_file(filename, data) {
             tempObject = { attributes: {}}
         }
         // Generate a new file for every 200 records
-        if(index != 0 && (index % 200 == 0)) {
-          data = JSON.stringify(items_cs_data);
-          var fileCount = (index / 200) > 1 ?  (index / 200) : '';
-          newFileName = `${filename}${fileCount}.json`;
-          fs.writeFileSync(fileLocation + newFileName, data);
-          console.log(newFileName, ' is generated!');
+        if(index != 0 && (index % 200 == 0 || index == data.length - 1)) {
+          generateFile(items_cs_data, index, filename);
           items_cs_data.records = [];
         }
       // }
@@ -432,7 +426,7 @@ function generate_ChecklistTemplateCS_file(filename, data) {
           tempObject = { attributes: {}}
       }
     });
-    var data = JSON.stringify(items_cs_data);
+      var data = JSON.stringify(items_cs_data);
       fs.writeFileSync(fileLocation + filename + '.json', data);
       console.log(filename, ' is generated!');
   } catch {
@@ -478,12 +472,8 @@ function generate_ChecklistItemTemplateCS_file(filename, data) {
             tempObject = { attributes: {}}
         }
         // Generate a new file for every 200 records
-        if(index != 0 && (index % 200 == 0)) {
-          data = JSON.stringify(items_cs_data);
-          var fileCount = (index / 200) > 1 ?  (index / 200) : '';
-          newFileName = `${filename}${fileCount}.json`;
-          fs.writeFileSync(fileLocation + newFileName, data);
-          console.log(newFileName, ' is generated!');
+        if(index != 0 && (index % 200 == 0 || index == data.length - 1)) {
+          generateFile(items_cs_data, index, filename);
           items_cs_data.records = [];
         }
       // }
@@ -491,6 +481,14 @@ function generate_ChecklistItemTemplateCS_file(filename, data) {
   } catch {
     console.error(newFileName, 'failure');
   }
+}
+
+function generateFile(items_cs_data, index, filename) {
+  var batchData = JSON.stringify(items_cs_data);
+  var fileCount = (index / 200) > 1 ?  Math.floor(index / 200) : '';
+  newFileName = `${filename}${fileCount}.json`;
+  fs.writeFileSync(fileLocation + newFileName, batchData);
+  console.log(newFileName, ' is generated!');
 }
 
 function getArgs () {
@@ -516,4 +514,3 @@ function getArgs () {
   return args;
 }
 const args = getArgs();
-console.log(args);
